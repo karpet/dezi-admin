@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Plack::Builder;
+use Plack::App::File;
 use Dezi::Admin::Config;
 
 our $VERSION = '0.001';
@@ -21,16 +22,16 @@ web interface to a Dezi server.
 
 =head1 METHODS
 
-=head2 app( I<config> )
+=head2 app()
 
 Returns a Plack-ready application via Plack::Builder.
 
 =cut
 
 sub app {
-    my ( $class, $config ) = @_;
+    my $self = shift;
 
-    my $admin_config = Dezi::Admin::Config->new(%$config);
+    my $admin_config = Dezi::Admin::Config->new( shift(@_) );
 
     return builder {
 
@@ -40,13 +41,18 @@ sub app {
         enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
         "Plack::Middleware::ReverseProxy";
 
-        # HTML/Javascript
+        # HTML
         mount '/ui' => builder {
             enable "Auth::Basic",
                 authenticator => $admin_config->authenticator,
                 realm         => $admin_config->auth_realm;
             $admin_config->ui_server;
         };
+
+        # CSS/JS/etc
+        mount '/ui/static' =>
+            Plack::App::File->new( root => $admin_config->ui_static_path )
+            ->to_app;
 
         # REST API
         mount '/api' => builder {

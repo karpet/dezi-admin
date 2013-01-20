@@ -2,6 +2,11 @@ package Dezi::Admin::Config;
 use strict;
 use warnings;
 use Carp;
+use Dezi::Admin::UI;
+use Dezi::Admin::About;
+use Dezi::Admin::API;
+use Class::Inspector;
+use Path::Class;
 use Plack::Util::Accessor qw(
     debug
     authenticator
@@ -25,9 +30,9 @@ Dezi::Admin::Config - Dezi administration UI configuration
 
 =cut
 
-=head2 new( I<args> )
+=head2 new( I<config> )
 
-Returns a new Config object. I<args> should be key/value pairs
+Returns a new Config object. I<config> should be a hashref with keys
 including:
 
 =over
@@ -46,18 +51,22 @@ including:
 
 sub new {
     my $class = shift;
-    my %args  = @_;
-    $args{debug} = 0 unless defined $args{debug};
-    $args{username} or croak "username required";
-    $args{password} or croak "password required";
-    $args{auth_realm} ||= 'Dezi Admin';
+    my $args = shift || {};
+    $args->{debug} = 0 unless defined $args->{debug};
+    $args->{username} or carp "WARNING: username missing - no auth enforced";
+    $args->{password} or carp "WARNING: password missing - no auth enforced";
+    $args->{auth_realm} ||= 'Dezi Admin';
 
-    $args{authenticator} = sub {
+    $args->{authenticator} = sub {
         my ( $u, $p ) = @_;
-        return $u eq $args{username} && $p eq $args{password};
+        return $u eq $args->{username} && $p eq $args->{password};
     };
 
-    return bless \%args, $class;
+    $args->{ui_server}    = Dezi::Admin::UI->new()->to_app();
+    $args->{about_server} = Dezi::Admin::About->new()->to_app();    # TODO
+    $args->{api_server}   = Dezi::Admin::API->new()->to_app();
+
+    return bless $args, $class;
 }
 
 =head2 authenticator
@@ -70,6 +79,20 @@ to L<Plack::Middleware::Auth::Basic>.
 =head2 ui_server
 
 Returns an instance of Dezi::Admin::UI.
+
+=head2 ui_static_path
+
+File path to where static assets are stored. These include .css
+and .js files.
+
+=cut
+
+sub ui_static_path {
+    my $self = shift;
+    my $base = Class::Inspector->loaded_filename('Dezi::Admin::UI');
+    $base =~ s/\.pm$//;
+    return dir( $base, 'static' );
+}
 
 =head2 api_server
 
