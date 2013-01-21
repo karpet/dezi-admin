@@ -83,8 +83,11 @@ Dezi::Admin::Utils - Dezi administration utility functions
 
  use Dezi::Admin::Utils;
  
- my ( $sql, $sql_count, $args )
-        = Dezi::Admin::Utils::params_to_sql($req, $table_name, [qw( name color )]);
+ my %sql = Dezi::Admin::Utils::params_to_sql(
+    $req, 
+    $table_name, 
+    [qw( name color )]
+ );
         
 =head1 DESCRIPTION
 
@@ -95,7 +98,7 @@ Dezi::Admin utility functions.
 =head2 params_to_sql( I<plack_request>, I<table_name>[, I<columns>] )
 
 Returns SQL derived from incoming
-parameters in I<plack_request>. Array of three values are returned:
+parameters in I<plack_request>. Key/value pairs are returned, where keys are:
 
 =over
 
@@ -103,7 +106,7 @@ parameters in I<plack_request>. Array of three values are returned:
 
 SQL string returning matching rows
 
-=item sql_count
+=item count
 
 SQL string returning total count
 
@@ -111,6 +114,30 @@ SQL string returning total count
 
 Array of values to be passed to $sth->execute(). May be undefined,
 in which case do not pass to execute().
+
+=item where
+
+WHERE clause.
+
+=item order_by
+
+ORDER BY clause.
+
+=item limit
+
+Integer
+
+=item offset
+
+Integer
+
+=item sort
+
+Column name in ORDER BY clause.
+
+item direction
+
+ORDER BY direction (C<ASC> or C<DESC>).
 
 =back
 
