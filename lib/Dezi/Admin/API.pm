@@ -2,9 +2,13 @@ package Dezi::Admin::API;
 use strict;
 use warnings;
 use Carp;
-use base qw( Plack::Middleware::REST );
-use Plack::Request;
+use Plack::Builder;
 use Data::Dump qw( dump );
+use Plack::Util::Accessor qw(
+    debug
+    base_uri
+);
+use JSON;
 
 our $VERSION = '0.001';
 
@@ -19,6 +23,71 @@ Dezi::Admin::API - Dezi administration API
 =head1 METHODS
 
 =cut
+
+sub app {
+    my $self         = shift;
+    my $config       = shift or croak "Dezi::Config required";
+    my $admin_config = $config->{admin}
+        or croak "Dezi::Admin::Config key required";
+
+    dump $config;
+
+    my $stats_app;
+    if (    $config->{stats_logger}
+        and $config->{stats_logger}->isa('Dezi::Stats::DBI') )
+    {
+        require Dezi::Admin::API::Stats;
+        my $conn = $config->{stats_logger}->conn;
+        my $tbl  = $config->{stats_logger}->table_name;
+        $stats_app = {
+            get => Dezi::Admin::API::Stats::GET->new(
+                conn       => $conn,
+                table_name => $tbl,
+                )->to_app(),
+            list => Dezi::Admin::API::Stats::LIST->new(
+                conn       => $conn,
+                table_name => $tbl,
+                )->to_app(),
+            pass_through => 0,
+        };
+    }
+
+    return builder {
+
+        enable "SimpleLogger",
+            level => $admin_config->debug ? "debug" : "warn";
+
+        enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
+        "Plack::Middleware::ReverseProxy";
+
+        enable "Auth::Basic",
+            authenticator => $admin_config->authenticator,
+            realm         => $admin_config->auth_realm;
+
+        # Dezi::Stats
+        if ($stats_app) {
+
+            mount '/stats' => builder {
+                enable 'REST', %$stats_app;
+            };
+        }
+
+        # About page
+        mount '/' => builder {
+            sub {
+                my $req   = Plack::Request->new(shift);
+                my $resp  = $req->new_response();
+                my $about = { name => $self, version => $VERSION, };
+                $resp->body( to_json($about) );
+                $resp->status(200);
+                $resp->content_type('application/json');
+                return $resp->finalize();
+            };
+        };
+
+    };
+
+}
 
 1;
 

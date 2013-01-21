@@ -50,23 +50,43 @@ including:
 =cut
 
 sub new {
-    my $class = shift;
-    my $args = shift || {};
-    $args->{debug} = 0 unless defined $args->{debug};
-    $args->{username} or carp "WARNING: username missing - no auth enforced";
-    $args->{password} or carp "WARNING: password missing - no auth enforced";
-    $args->{auth_realm} ||= 'Dezi Admin';
+    my $class         = shift;
+    my %args          = @_;
+    my $config        = delete $args{config} or croak "config required";
+    my $search_config = delete $args{search_config}
+        or croak "search_config required";
+    my $index_config = delete $args{indexer_config}
+        or croak "indexer_config required";
+    my $base_uri = delete $args{base_uri} || '';
 
-    $args->{authenticator} = sub {
+    my $admin_conf = $config->{admin} ||= {};
+    $admin_conf->{debug} = 0 unless defined $admin_conf->{debug};
+    $admin_conf->{username}
+        or carp "WARNING: username missing - no auth enforced";
+    $admin_conf->{password}
+        or carp "WARNING: password missing - no auth enforced";
+    $admin_conf->{auth_realm} ||= 'Dezi Admin';
+
+    $admin_conf->{authenticator} = sub {
         my ( $u, $p ) = @_;
-        return $u eq $args->{username} && $p eq $args->{password};
+        return 1 if ( !$admin_conf->{username} and !$admin_conf->{password} );
+        return $u eq $admin_conf->{username} && $p eq $admin_conf->{password};
     };
 
-    $args->{ui_server}    = Dezi::Admin::UI->new()->to_app();
-    $args->{about_server} = Dezi::Admin::About->new()->to_app();    # TODO
-    $args->{api_server}   = Dezi::Admin::API->new()->to_app();
+    $admin_conf->{ui_server} = Dezi::Admin::UI->new(
+        base_uri  => $base_uri,
+        extjs_uri => $admin_conf->{extjs_uri},
+    )->to_app();
+    $admin_conf->{about_server} = Dezi::Admin::About->new(
+        base_uri  => $base_uri,
+        extjs_uri => $admin_conf->{extjs_uri},
+    )->to_app();
 
-    return bless $args, $class;
+    my $self = bless $admin_conf, $class;
+
+    $self->{api_server} = Dezi::Admin::API->app( $config, );
+
+    return $self;
 }
 
 =head2 authenticator

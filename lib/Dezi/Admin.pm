@@ -29,9 +29,9 @@ Returns a Plack-ready application via Plack::Builder.
 =cut
 
 sub app {
-    my $self = shift;
-
-    my $admin_config = Dezi::Admin::Config->new( shift(@_) );
+    my $self         = shift;
+    my %args         = @_;
+    my $admin_config = Dezi::Admin::Config->new(%args);
 
     return builder {
 
@@ -41,13 +41,12 @@ sub app {
         enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
         "Plack::Middleware::ReverseProxy";
 
+        enable "Auth::Basic",
+            authenticator => $admin_config->authenticator,
+            realm         => $admin_config->auth_realm;
+
         # HTML
-        mount '/ui' => builder {
-            enable "Auth::Basic",
-                authenticator => $admin_config->authenticator,
-                realm         => $admin_config->auth_realm;
-            $admin_config->ui_server;
-        };
+        mount '/ui' => $admin_config->ui_server;
 
         # CSS/JS/etc
         mount '/ui/static' =>
@@ -55,12 +54,7 @@ sub app {
             ->to_app;
 
         # REST API
-        mount '/api' => builder {
-            enable "Auth::Basic",
-                authenticator => $admin_config->authenticator,
-                realm         => $admin_config->auth_realm;
-            $admin_config->api_server;
-        };
+        mount '/api' => $admin_config->api_server;
 
         # root is About page
         mount '/' => $admin_config->about_server;

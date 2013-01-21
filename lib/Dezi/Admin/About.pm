@@ -5,6 +5,11 @@ use Carp;
 use base qw( Plack::Middleware );
 use Plack::Request;
 use Data::Dump qw( dump );
+use Plack::Util::Accessor qw(
+    debug
+    base_uri
+    extjs_uri
+);
 
 our $VERSION = '0.001';
 
@@ -18,6 +23,14 @@ Dezi::Admin::About - Dezi administration UI home page
 
 =head1 METHODS
 
+
+=cut
+
+sub prepare_app {
+    my ($self) = @_;
+    $self->{extjs_uri} ||= '//cdn.sencha.io/ext-4.1.1-gpl';
+}
+
 =head2 default_page
 
 Returns the HTML string suitable for the main UI. It uses
@@ -26,18 +39,37 @@ the jQuery-based examples from dezi.org.
 =cut
 
 sub default_page {
+    my $self      = shift;
+    my $extjs_uri = $self->extjs_uri;
     return <<EOF;
 <html>
  <head>
   <title>Dezi Admin</title>
-  <link rel="stylesheet" type="text/css" href="ui/static/css/dezi-admin.css" />
-  <link rel="stylesheet" type="text/css" href="//cdn.sencha.io/ext-4.1.1-gpl/resources/css/ext-all.css" />
-  <script type="text/javascript" charset="utf-8" src="//cdn.sencha.io/ext-4.1.1-gpl/ext-all.js"></script>
-  <script type="text/javascript" charset="utf-8" src="ui/static/js/dezi-admin.js"></script>
- </head>
- <body>
-  <h1>Dezi Administration</h1>
   
+  <!-- ext base js/css -->
+  <link rel="stylesheet" type="text/css" href="$extjs_uri/resources/css/ext-all.css" />
+  <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all.js"></script>
+  
+  <!-- dezi server js/css -->
+  <link rel="stylesheet" type="text/css" href="ui/static/css/dezi-admin.css" />
+  <script type="text/javascript" charset="utf-8" src="ui/static/js/dezi-admin.js"></script>
+ 
+ </head>
+ <body id="about">
+  <div class="main">
+   <h1>Dezi Administration</h1>
+   <p>
+   You may <a href="ui/">administer your Dezi server</a> via the web
+   interface or by using <a href="api/">the Dezi Admin API</a>.
+   </p>
+   <p>
+   Other options:
+   <ul>
+    <li><a href="ui/server-config">Current Dezi server configuration</a>.</li>
+    <li><a href="ui/indexes">Current index configuration</a>.</li>
+   </ul>
+   </p>
+  </div>
  </body>
 </html>
 EOF

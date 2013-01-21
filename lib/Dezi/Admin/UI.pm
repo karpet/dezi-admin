@@ -5,6 +5,11 @@ use Carp;
 use base qw( Plack::Middleware );
 use Plack::Request;
 use Data::Dump qw( dump );
+use Plack::Util::Accessor qw(
+    debug
+    base_uri
+    extjs_uri
+);
 
 our $VERSION = '0.001';
 
@@ -17,6 +22,12 @@ Dezi::Admin::UI - Dezi administration UI application
 =head1 DESCRIPTION
 
 =head1 METHODS
+=cut
+
+sub prepare_app {
+    my ($self) = @_;
+    $self->{extjs_uri} ||= '//cdn.sencha.io/ext-4.1.1-gpl';
+}
 
 =head2 default_page
 
@@ -26,16 +37,29 @@ the jQuery-based examples from dezi.org.
 =cut
 
 sub default_page {
+    my $self      = shift;
+    my $extjs_uri = $self->extjs_uri;
+    my $base_uri  = $self->base_uri;
     return <<EOF;
 <html>
  <head>
   <title>Dezi Admin</title>
+  
+  <script type="text/javascript">
+      ExtJS_URL             = '$extjs_uri';
+      DEZI_ADMIN_BASE_URL   = '$base_uri/admin';
+  </script>
+  
+  <!-- ext base js/css -->
+  <link rel="stylesheet" type="text/css" href="$extjs_uri/resources/css/ext-all.css" />
+  <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all-debug.js"></script>
+  
+  <!-- dezi server js/css -->
   <link rel="stylesheet" type="text/css" href="static/css/dezi-admin.css" />
-  <link rel="stylesheet" type="text/css" href="//cdn.sencha.io/ext-4.1.1-gpl/resources/css/ext-all.css" />
-  <script type="text/javascript" charset="utf-8" src="//cdn.sencha.io/ext-4.1.1-gpl/ext-all.js"></script>
   <script type="text/javascript" charset="utf-8" src="static/js/dezi-admin.js"></script>
+
  </head>
- <body></body>
+ <body id="ui">dezi admin ui</body>
 </html>
 EOF
 
@@ -48,22 +72,45 @@ are the only allowed interface.
 
 =cut
 
+my %dispatch = (
+    '/server-config' => 'server_config',
+    '/indexes'       => 'indexes',
+);
+
 sub call {
     my ( $self, $env ) = @_;
-    my $req  = Plack::Request->new($env);
-    my $path = $req->path;
-    my $resp = $req->new_response;
-    if ( $req->method eq 'GET' ) {
-        $resp->status(200);
-        $resp->content_type('text/html');
-        my $body = $self->default_page;
-        $resp->body($body);
+    my $req    = Plack::Request->new($env);
+    my $path   = $req->path;
+    my $method = $dispatch{$path} || '';
+    my $resp   = $req->new_response;
+    if ($method) {
+        $self->$method( $req, $resp );
     }
     else {
-        $resp->status(400);
-        $resp->body('GET only allowed');
+        if ( $req->method eq 'GET' ) {
+            my $body = $self->default_page;
+            $resp->body($body);
+        }
+        else {
+            $resp->status(400);
+            $resp->body('GET only allowed');
+        }
     }
+    $resp->status(200)               unless $resp->status;
+    $resp->content_type('text/html') unless $resp->content_type;
     return $resp->finalize;
+}
+
+sub server_config {
+    my ( $self, $req, $resp ) = @_;
+
+    $resp->body('dezi server config here');
+}
+
+sub indexes {
+    my ( $self, $req, $resp ) = @_;
+
+    $resp->body('load swish.xml for each index');
 }
 
 1;
