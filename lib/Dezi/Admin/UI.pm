@@ -52,14 +52,19 @@ sub default_page {
   
   <!-- ext base js/css -->
   <link rel="stylesheet" type="text/css" href="$extjs_uri/resources/css/ext-all.css" />
+  <link rel="stylesheet" type="text/css" href="$extjs_uri/examples/shared/example.css" />
+  <link rel="stylesheet" type="text/css" href="$extjs_uri/examples/portal/portal.css" />
+  <link rel="stylesheet" type="text/css" href="$extjs_uri/examples/ux/css/GroupTabPanel.css" />
+    
   <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all-debug.js"></script>
+  <script type="text/javascript" charset="utf-8" src="$extjs_uri/examples/grouptabs/all-classes.js"></script>
   
   <!-- dezi server js/css -->
   <link rel="stylesheet" type="text/css" href="static/css/dezi-admin.css" />
   <script type="text/javascript" charset="utf-8" src="static/js/dezi-admin.js"></script>
 
  </head>
- <body id="ui">dezi admin ui</body>
+ <body id="ui"></body><!-- rendered via js -->
 </html>
 EOF
 
@@ -72,45 +77,23 @@ are the only allowed interface.
 
 =cut
 
-my %dispatch = (
-    '/server-config' => 'server_config',
-    '/indexes'       => 'indexes',
-);
-
 sub call {
     my ( $self, $env ) = @_;
-    my $req    = Plack::Request->new($env);
-    my $path   = $req->path;
-    my $method = $dispatch{$path} || '';
-    my $resp   = $req->new_response;
-    if ($method) {
-        $self->$method( $req, $resp );
+    my $req  = Plack::Request->new($env);
+    my $resp = $req->new_response;
+
+    if ( $req->method eq 'GET' ) {
+        my $body = $self->default_page;
+        $resp->body($body);
     }
     else {
-        if ( $req->method eq 'GET' ) {
-            my $body = $self->default_page;
-            $resp->body($body);
-        }
-        else {
-            $resp->status(400);
-            $resp->body('GET only allowed');
-        }
+        $resp->status(405);
+        $resp->body('Allowed: GET');
     }
+
     $resp->status(200)               unless $resp->status;
     $resp->content_type('text/html') unless $resp->content_type;
     return $resp->finalize;
-}
-
-sub server_config {
-    my ( $self, $req, $resp ) = @_;
-
-    $resp->body('dezi server config here');
-}
-
-sub indexes {
-    my ( $self, $req, $resp ) = @_;
-
-    $resp->body('load swish.xml for each index');
 }
 
 1;

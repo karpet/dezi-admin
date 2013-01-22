@@ -55,7 +55,7 @@ sub new {
     my $config        = delete $args{config} or croak "config required";
     my $search_config = delete $args{search_config}
         or croak "search_config required";
-    my $index_config = delete $args{indexer_config}
+    my $indexer_config = delete $args{indexer_config}
         or croak "indexer_config required";
     my $base_uri = delete $args{base_uri} || '';
 
@@ -84,7 +84,11 @@ sub new {
 
     my $self = bless $admin_conf, $class;
 
-    $self->{api_server} = Dezi::Admin::API->app( $config, );
+    $self->{api_server} = Dezi::Admin::API->app(
+        dezi_config    => $config,
+        search_config  => $search_config,
+        indexer_config => $indexer_config,
+    );
 
     return $self;
 }

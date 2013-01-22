@@ -41,10 +41,16 @@ the jQuery-based examples from dezi.org.
 sub default_page {
     my $self      = shift;
     my $extjs_uri = $self->extjs_uri;
+    my $base_uri  = $self->base_uri;
     return <<EOF;
 <html>
  <head>
-  <title>Dezi Admin</title>
+  <title>Dezi Administration</title>
+  
+  <script type="text/javascript">
+      ExtJS_URL             = '$extjs_uri';
+      DEZI_ADMIN_BASE_URL   = '$base_uri/admin';
+  </script>
   
   <!-- ext base js/css -->
   <link rel="stylesheet" type="text/css" href="$extjs_uri/resources/css/ext-all.css" />
@@ -59,15 +65,8 @@ sub default_page {
   <div class="main">
    <h1>Dezi Administration</h1>
    <p>
-   You may <a href="ui/">administer your Dezi server</a> via the web
-   interface or by using <a href="api/">the Dezi Admin API</a>.
-   </p>
-   <p>
-   Other options:
-   <ul>
-    <li><a href="ui/server-config">Current Dezi server configuration</a>.</li>
-    <li><a href="ui/indexes">Current index configuration</a>.</li>
-   </ul>
+   You may administer your Dezi server via the <a href="ui/">web interface</a>
+   or by using <a href="api/">the Dezi Admin API</a>.
    </p>
   </div>
  </body>

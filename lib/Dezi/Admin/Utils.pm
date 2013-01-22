@@ -9,6 +9,8 @@ use Search::QueryParser::SQL;
 
 our $VERSION = '0.001';
 
+sub json_mime_type {'application/json'}
+
 sub params_to_sql {
     my $req = shift or croak "Plack::Request required";
     my $tbl = shift or croak "table_name required";
@@ -29,7 +31,16 @@ sub params_to_sql {
         $offset =~ s/\D//g;    # no injection
     }
     if ( exists $params->{q} ) {
-        my $qp = Search::QueryParser::SQL->new( columns => $columns );
+
+        # postgresql needs 'ILIKE' to work like mysql 'LIKE'
+        # but sqlite does not support ILIKE.
+        # compromise with 'LIKE' which works everywhere.
+
+        my $qp = Search::QueryParser::SQL->new(
+            columns => $columns,
+            like    => 'LIKE',
+        );
+
         my $query = $qp->parse( $params->{q} )->dbi;
         $where = $query->[0];
         $args  = $query->[1];

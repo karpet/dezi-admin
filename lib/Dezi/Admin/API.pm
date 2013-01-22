@@ -9,6 +9,7 @@ use Plack::Util::Accessor qw(
     base_uri
 );
 use JSON;
+use Dezi::Admin::API::Indexes;
 
 our $VERSION = '0.001';
 
@@ -25,13 +26,21 @@ Dezi::Admin::API - Dezi administration API
 =cut
 
 sub app {
-    my $self         = shift;
-    my $config       = shift or croak "Dezi::Config required";
+    my $self    = shift;
+    my %configs = @_;
+
+    #dump \%configs;
+
+    my $config = delete $configs{dezi_config}
+        or croak "Dezi::Config required";
+    my $search_config = delete $configs{search_config}
+        or croak "search_config required";
     my $admin_config = $config->{admin}
         or croak "Dezi::Admin::Config key required";
 
-    dump $config;
-
+    my @indexes = @{ $search_config->{index} };
+    my $type    = $search_config->{type};
+    my @models;
     my $stats_app;
     if (    $config->{stats_logger}
         and $config->{stats_logger}->isa('Dezi::Stats::DBI') )
@@ -50,6 +59,7 @@ sub app {
                 )->to_app(),
             pass_through => 0,
         };
+        push @models, 'stats';
     }
 
     return builder {
@@ -64,6 +74,18 @@ sub app {
             authenticator => $admin_config->authenticator,
             realm         => $admin_config->auth_realm;
 
+        # index meta
+        mount '/indexes' => builder {
+            enable 'REST',
+                get =>
+                Dezi::Admin::API::Indexes::GET->new( indexes => \@indexes )
+                ->to_app(),
+                list =>
+                Dezi::Admin::API::Indexes::LIST->new( indexes => \@indexes )
+                ->to_app(),
+                pass_through => 0;
+        };
+
         # Dezi::Stats
         if ($stats_app) {
 
@@ -77,7 +99,13 @@ sub app {
             sub {
                 my $req   = Plack::Request->new(shift);
                 my $resp  = $req->new_response();
-                my $about = { name => $self, version => $VERSION, };
+                my $about = {
+                    name    => $self,
+                    version => $VERSION,
+                    models  => \@models,
+                    indexes => \@indexes,
+                    type    => $type,
+                };
                 $resp->body( to_json($about) );
                 $resp->status(200);
                 $resp->content_type('application/json');
