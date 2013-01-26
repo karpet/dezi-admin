@@ -2,7 +2,7 @@ package Dezi::Admin::UI;
 use strict;
 use warnings;
 use Carp;
-use base qw( Plack::Middleware );
+use base qw( Plack::Component );
 use Plack::Request;
 use Data::Dump qw( dump );
 use Plack::Util::Accessor qw(
@@ -19,9 +19,30 @@ Dezi::Admin::UI - Dezi administration UI application
 
 =head1 SYNOPSIS
 
+ use Plack::Builder;
+ use Dezi::Admin::UI;
+ my $ui_app = Dezi::Admin::UI->new(
+    debug       => 0,
+    base_uri    => '',
+    extjs_uri   => '//cdn.sencha.io/ext-4.1.1-gpl',
+ );
+ builder {
+    mount '/' => $ui_app;
+ };
+ 
 =head1 DESCRIPTION
 
+Dezi::Admin::UI provides bootstrapping HTML to the ExtJS
+application. Dezi::Admin::UI is a L<Plack::Component> subclass.
+
 =head1 METHODS
+
+=cut
+
+=head2 prepare_app
+
+Override base class to set default extjs_uri() value.
+
 =cut
 
 sub prepare_app {

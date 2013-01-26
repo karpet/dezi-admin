@@ -19,9 +19,30 @@ Dezi::Admin::API - Dezi administration API
 
 =head1 SYNOPSIS
 
+ use Plack::Builder;
+ use Dezi::Admin::API;
+ my $api_app = Dezi::Admin::API->app(
+    dezi_config     => $dezi_config,
+    search_config   => $search_config,
+    admin           => $dezi_admin_config,
+ );
+ builder {
+     mount '/api' => $api_app
+ };
+ 
 =head1 DESCRIPTION
 
+Plack application for Dezi administration API. Uses 
+L<Plack::Middleware::REST> to give access to Dezi stats
+and index metadata.
+
 =head1 METHODS
+
+=cut
+
+=head2 app
+
+Returns the API Plack app.
 
 =cut
 

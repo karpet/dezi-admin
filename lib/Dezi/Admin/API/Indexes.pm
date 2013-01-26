@@ -18,7 +18,7 @@ our $VERSION = '0.001';
 our @FIELDS = ( 'id', 'path', 'config', );
 
 # TODO
-sub get_indexes_list {
+sub get_list {
     my ( $self, $req ) = @_;
     my $list  = [];
     my $total = 0;
@@ -81,7 +81,7 @@ use base qw( Dezi::Admin::API::Indexes );
 sub call {
     my ( $self, $env ) = @_;
     my $req  = Plack::Request->new($env);
-    my $list = $self->get_indexes_list($req);
+    my $list = $self->gets_list($req);
     my $resp = $req->new_response;
     $resp->status(200) unless $resp->status;
     $resp->content_type(Dezi::Admin::Utils::json_mime_type)
@@ -100,9 +100,22 @@ Dezi::Admin::API::Indexes - Dezi administration API to index metadata
 
 =head1 SYNOPSIS
 
+ /api/indexes?q=foo&sort=name&dir=asc&limit=10&offset=0
+
 =head1 DESCRIPTION
 
+Dezi::Admin::API::Stats isa L<Plack::Component>.
+
 =head1 METHODS
+
+=head2 get_list
+
+Returns L<Dezi::Admin::API::Response> object representing metadata for
+one or more indexes matching GET params.
+
+=head2 get_index
+
+Returns L<Dezi::Admin::API::Response> object for a single index.
 
 =head1 AUTHOR
 

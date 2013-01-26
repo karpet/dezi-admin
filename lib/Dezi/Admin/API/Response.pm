@@ -64,6 +64,10 @@ Dezi::Admin::API::Response represents a JSON response to an API call.
 
 =head1 METHODS
 
+=head2 new( I<args> )
+
+Constructor. I<args> should include params I<total> and I<results>.
+
 =head2 success
 
 Get/set success boolean.

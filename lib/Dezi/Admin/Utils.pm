@@ -106,6 +106,10 @@ Dezi::Admin utility functions.
 
 =head1 FUNCTIONS
 
+=head2 json_mime_type
+
+Returns appropriate MIME type string.
+
 =head2 params_to_sql( I<plack_request>, I<table_name>[, I<columns>] )
 
 Returns SQL derived from incoming

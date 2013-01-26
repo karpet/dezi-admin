@@ -36,7 +36,7 @@ our @FIELDS = (
     't', 'b',
 );
 
-sub get_stats_list {
+sub get_list {
     my ( $self, $req ) = @_;
     my $list  = [];
     my $total = 0;
@@ -113,7 +113,7 @@ use base qw( Dezi::Admin::API::Stats );
 sub call {
     my ( $self, $env ) = @_;
     my $req        = Plack::Request->new($env);
-    my $stats_list = $self->get_stats_list($req);
+    my $stats_list = $self->get_list($req);
     my $resp       = $req->new_response;
     $resp->status(200) unless $resp->status;
     $resp->content_type(Dezi::Admin::Utils::json_mime_type)
@@ -132,9 +132,23 @@ Dezi::Admin::API::Stats - Dezi administration API to Dezi::Stats data
 
 =head1 SYNOPSIS
 
+ /api/stats?q=foo&sort=name&dir=asc&limit=10&offset=0
+
 =head1 DESCRIPTION
 
+Dezi::Admin::API::Stats isa L<Plack::Component>.
+
 =head1 METHODS
+
+=head2 get_list
+
+Returns L<Dezi::Admin::API::Response> object representing metadata for
+one or more statistics matching GET params.
+
+=head2 get_stat
+
+Returns L<Dezi::Admin::API::Response> object for a single statistic.
+
 
 =head1 AUTHOR
 
