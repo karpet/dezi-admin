@@ -72,6 +72,7 @@ sub new {
     };
 
     $admin_conf->{ui_server} = Dezi::Admin::UI->new(
+        debug     => $admin_conf->{debug},
         base_uri  => $base_uri,
         extjs_uri => $admin_conf->{extjs_uri},
     )->to_app();
