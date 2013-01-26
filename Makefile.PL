@@ -6,7 +6,7 @@ use 5.008003;
 name 'Dezi-Admin';
 all_from 'lib/Dezi/Admin.pm';
 requires 'Test::More'                       => 0;
-requires 'Dezi'                             => 0.00205;
+requires 'Dezi'                             => 0.002006;
 requires 'Plack'                            => 0;
 requires 'Plack::Middleware::ReverseProxy'  => 0;
 requires 'Plack::Middleware::Auth::Basic'   => 0;

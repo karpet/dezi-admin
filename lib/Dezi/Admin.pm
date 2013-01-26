@@ -46,18 +46,15 @@ sub app {
             realm         => $admin_config->auth_realm;
 
         # HTML
-        mount '/ui' => $admin_config->ui_server;
+        mount '/' => $admin_config->ui_server;
 
         # CSS/JS/etc
-        mount '/ui/static' =>
+        mount '/static' =>
             Plack::App::File->new( root => $admin_config->ui_static_path )
             ->to_app;
 
         # REST API
         mount '/api' => $admin_config->api_server;
-
-        # root is About page
-        mount '/' => $admin_config->about_server;
 
     };
 

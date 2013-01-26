@@ -3,6 +3,9 @@ MANIFEST
 Makefile.PL
 README
 lib/Dezi/Admin.pm
+lib/Dezi/Admin/Config.pm
+lib/Dezi/Admin/UI.pm
+lib/Dezi/Admin/API.pm
 t/00-load.t
 t/pod-coverage.t
 t/pod.t

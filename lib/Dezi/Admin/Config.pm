@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Carp;
 use Dezi::Admin::UI;
-use Dezi::Admin::About;
 use Dezi::Admin::API;
 use Class::Inspector;
 use Path::Class;
@@ -13,7 +12,6 @@ use Plack::Util::Accessor qw(
     auth_realm
     ui_server
     api_server
-    about_server
 );
 
 our $VERSION = '0.001';
@@ -77,10 +75,6 @@ sub new {
         base_uri  => $base_uri,
         extjs_uri => $admin_conf->{extjs_uri},
     )->to_app();
-    $admin_conf->{about_server} = Dezi::Admin::About->new(
-        base_uri  => $base_uri,
-        extjs_uri => $admin_conf->{extjs_uri},
-    )->to_app();
 
     my $self = bless $admin_conf, $class;
 
@@ -121,10 +115,6 @@ sub ui_static_path {
 =head2 api_server
 
 Returns an instance of Dezi::Admin::API.
-
-=head2 about_server
-
-Returns an instance of Dezi::Admin::About.
 
 =head2 as_hash
 
