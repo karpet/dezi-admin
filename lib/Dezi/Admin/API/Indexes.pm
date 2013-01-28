@@ -6,7 +6,7 @@ use base qw( Plack::Component );
 use Data::Dump qw( dump );
 use Plack::Util::Accessor qw(
     debug
-    indexes
+    searcher
 );
 use JSON;
 use Plack::Middleware::REST::Util;

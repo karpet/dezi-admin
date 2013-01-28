@@ -22,9 +22,8 @@ Dezi::Admin::API - Dezi administration API
  use Plack::Builder;
  use Dezi::Admin::API;
  my $api_app = Dezi::Admin::API->app(
-    dezi_config     => $dezi_config,
-    search_config   => $search_config,
-    admin           => $dezi_admin_config,
+    searcher        => $dezi_server,
+    admin_config    => $dezi_admin_config,
  );
  builder {
      mount '/api' => $api_app
@@ -52,23 +51,27 @@ sub app {
 
     #dump \%configs;
 
-    my $config = delete $configs{dezi_config}
-        or croak "Dezi::Config required";
-    my $search_config = delete $configs{search_config}
-        or croak "search_config required";
-    my $admin_config = $config->{admin}
-        or croak "Dezi::Admin::Config key required";
+    my $searcher = delete $configs{searcher}
+        or croak "searcher required";
+    my $admin_config = delete $configs{admin_config}
+        or croak "admin key required in user_config";
 
-    my @indexes = @{ $search_config->{index} };
-    my $type    = $search_config->{type};
+    if ( !$admin_config->isa('Dezi::Admin::Config') ) {
+        croak "admin value should be a Dezi::Admin::Config object";
+    }
+
+    # need to call this before we access ->engine for the first time.
+    $searcher->setup_engine();
+
     my @models;
     my $stats_app;
-    if (    $config->{stats_logger}
-        and $config->{stats_logger}->isa('Dezi::Stats::DBI') )
+    my $stats_logger = $searcher->stats_logger;
+    if (    $stats_logger
+        and $stats_logger->isa('Dezi::Stats::DBI') )
     {
         require Dezi::Admin::API::Stats;
-        my $conn = $config->{stats_logger}->conn;
-        my $tbl  = $config->{stats_logger}->table_name;
+        my $conn = $stats_logger->conn;
+        my $tbl  = $stats_logger->table_name;
         $stats_app = {
             get => Dezi::Admin::API::Stats::GET->new(
                 conn       => $conn,
@@ -85,25 +88,23 @@ sub app {
 
     return builder {
 
-        enable "SimpleLogger",
-            level => $admin_config->debug ? "debug" : "warn";
+        #enable "SimpleLogger",
+        #    level => $admin_config->debug ? "debug" : "warn";
 
-        enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
-        "Plack::Middleware::ReverseProxy";
+        #enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
+        #"Plack::Middleware::ReverseProxy";
 
-        enable "Auth::Basic",
-            authenticator => $admin_config->authenticator,
-            realm         => $admin_config->auth_realm;
+        #enable "Auth::Basic",
+        #    authenticator => $admin_config->authenticator,
+        #    realm         => $admin_config->auth_realm;
 
         # index meta
         mount '/indexes' => builder {
             enable 'REST',
-                get =>
-                Dezi::Admin::API::Indexes::GET->new( indexes => \@indexes )
-                ->to_app(),
-                list =>
-                Dezi::Admin::API::Indexes::LIST->new( indexes => \@indexes )
-                ->to_app(),
+                get => Dezi::Admin::API::Indexes::GET->new(
+                engine => $searcher->engine, )->to_app(),
+                list => Dezi::Admin::API::Indexes::LIST->new(
+                engine => $searcher->engine, )->to_app(),
                 pass_through => 0;
         };
 
@@ -124,8 +125,7 @@ sub app {
                     name    => $self,
                     version => $VERSION,
                     models  => \@models,
-                    indexes => \@indexes,
-                    type    => $type,
+                    type    => $searcher->engine->type,
                 };
                 $resp->body( to_json($about) );
                 $resp->status(200);

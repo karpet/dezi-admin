@@ -28,10 +28,17 @@ Dezi::Admin::Config - Dezi administration UI configuration
 
 =cut
 
-=head2 new( I<config> )
+=head2 new( I<args> )
 
-Returns a new Config object. I<config> should be a hashref with keys
+Returns a new Config object. I<args> should be a hash with keys
 including:
+
+=over
+
+=item user_config
+
+Hashref as passed to Dezi::Config->new(). May contain a key
+called C<admin> with values like:
 
 =over
 
@@ -43,21 +50,32 @@ including:
 
 =item debug
 
+=item extjs_uri
+
+=back
+
+=item searcher
+
+A Dezi::Server-like instance.
+
+=item base_uri
+
+The base URI for the Dezi instance.
+
 =back
 
 =cut
 
 sub new {
-    my $class         = shift;
-    my %args          = @_;
-    my $config        = delete $args{config} or croak "config required";
-    my $search_config = delete $args{search_config}
-        or croak "search_config required";
-    my $indexer_config = delete $args{indexer_config}
-        or croak "indexer_config required";
+    my $class       = shift;
+    my %args        = @_;
+    my $user_config = delete $args{user_config}
+        or croak "user_config required";
+    my $searcher = delete $args{searcher}
+        or croak "searcher required";
     my $base_uri = delete $args{base_uri} || '';
 
-    my $admin_conf = $config->{admin} ||= {};
+    my $admin_conf = $user_config->{admin} ||= {};
     $admin_conf->{debug} = 0 unless defined $admin_conf->{debug};
     $admin_conf->{username}
         or carp "WARNING: username missing - no auth enforced";
@@ -65,11 +83,18 @@ sub new {
         or carp "WARNING: password missing - no auth enforced";
     $admin_conf->{auth_realm} ||= 'Dezi Admin';
 
-    $admin_conf->{authenticator} = sub {
-        my ( $u, $p ) = @_;
-        return 1 if ( !$admin_conf->{username} and !$admin_conf->{password} );
-        return $u eq $admin_conf->{username} && $p eq $admin_conf->{password};
-    };
+    if ( $admin_conf->{username} and $admin_conf->{password} ) {
+        $admin_conf->{authenticator} = sub {
+            my ( $u, $p ) = @_;
+
+       #return 1 if ( !$admin_conf->{username} and !$admin_conf->{password} );
+            return $u eq $admin_conf->{username}
+                && $p eq $admin_conf->{password};
+        };
+    }
+    else {
+        $admin_conf->{authenticator} = undef;
+    }
 
     $admin_conf->{ui_server} = Dezi::Admin::UI->new(
         debug     => $admin_conf->{debug},
@@ -80,9 +105,8 @@ sub new {
     my $self = bless $admin_conf, $class;
 
     $self->{api_server} = Dezi::Admin::API->app(
-        dezi_config    => $config,
-        search_config  => $search_config,
-        indexer_config => $indexer_config,
+        admin_config => $self,
+        searcher     => $searcher,
     );
 
     return $self;

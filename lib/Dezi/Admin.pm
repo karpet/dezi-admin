@@ -41,9 +41,11 @@ sub app {
         enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
         "Plack::Middleware::ReverseProxy";
 
-        enable "Auth::Basic",
-            authenticator => $admin_config->authenticator,
-            realm         => $admin_config->auth_realm;
+        if ( defined $admin_config->authenticator ) {
+            enable "Auth::Basic",
+                authenticator => $admin_config->authenticator,
+                realm         => $admin_config->auth_realm;
+        }
 
         # HTML
         mount '/' => $admin_config->ui_server;
