@@ -18,5 +18,7 @@ if ( !$r ) {
 
 {   admin        => { extjs_uri => '//localhost/~karpet/ext-4.1.1a', },
     stats_logger => $stats,
+    admin_class  => 'Dezi::Admin',
+    debug        => 1,
 }
 

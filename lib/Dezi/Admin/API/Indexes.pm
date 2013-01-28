@@ -6,7 +6,7 @@ use base qw( Plack::Component );
 use Data::Dump qw( dump );
 use Plack::Util::Accessor qw(
     debug
-    searcher
+    engine
 );
 use JSON;
 use Plack::Middleware::REST::Util;
@@ -15,30 +15,41 @@ use Dezi::Admin::API::Response;
 
 our $VERSION = '0.001';
 
-our @FIELDS = ( 'id', 'path', 'config', );
+our @FIELDS = ( 'path', 'config', );
 
-# TODO
 sub get_list {
     my ( $self, $req ) = @_;
+
+    # we don't actually need the sql,
+    # but the param parsing is convenient.
+    my %sql = Dezi::Admin::Utils::params_to_sql( $req, 'ignored' );
+
+    #dump \%sql;
+
     my $list  = [];
-    my $total = 0;
+    my $index = $self->engine->index;
+    my $total = scalar @$index;
+    for my $idx ( @{ $self->engine->searcher->invindex } ) {
+        my $res = {
+            path   => "$idx",
+            config => $idx->meta->data,
+        };
+        push @$list, $res;
+    }
 
     my $resp = Dezi::Admin::API::Response->new(
         total   => $total,
         results => $list,
 
     );
-    $resp->metaData->{fields} = [@FIELDS];
-
-    # TODO
+    $resp->metaData->{fields}   = [@FIELDS];
     $resp->metaData->{sortInfo} = {
-        direction => 'path',
-        field     => 'ASC',
+        direction => ( $sql{direction} || 'ASC' ),
+        field     => ( $sql{sort}      || 'path' ),
     };
 
-    # TODO
-    $resp->metaData->{limit} = scalar( @{ $self->indexes } );
-    $resp->metaData->{start} = 0;
+    $resp->metaData->{limit} = $sql{limit};
+    $resp->metaData->{start} = $sql{offset};
 
     return $resp;
 }
@@ -81,7 +92,7 @@ use base qw( Dezi::Admin::API::Indexes );
 sub call {
     my ( $self, $env ) = @_;
     my $req  = Plack::Request->new($env);
-    my $list = $self->gets_list($req);
+    my $list = $self->get_list($req);
     my $resp = $req->new_response;
     $resp->status(200) unless $resp->status;
     $resp->content_type(Dezi::Admin::Utils::json_mime_type)

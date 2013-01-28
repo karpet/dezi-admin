@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Test::More tests => 29;
+use Test::More tests => 32;
 use Plack::Test;
 use File::Temp 'tempfile';
 use Plack::Request;
@@ -15,13 +15,13 @@ SKIP: {
     eval "use Dezi::Stats::DBI";
     if ($@) {
         diag "install Dezi::Stats::DBI to test Dezi::Admin";
-        skip "Dezi::Stats::DBI not installed", 29;
+        skip "Dezi::Stats::DBI not installed", 32;
     }
 
     eval "use DBD::SQLite";
     if ($@) {
         diag "install DBD::SQLite to test Dezi::Admin";
-        skip "DBD::SQLite not installed", 29;
+        skip "DBD::SQLite not installed", 32;
     }
 
     my ( undef, $dbfile ) = tempfile();
@@ -224,6 +224,26 @@ SKIP: {
             ok( my $json = decode_json( $res->content ),
                 "decode content as JSON" );
             is( $json->{total}, 4, "4 stats" );
+        }
+    );
+
+    test_psgi(
+        app    => $app,
+        client => sub {
+            my $cb  = shift;
+            my $req = HTTP::Request->new(
+                GET => 'http://localhost/admin/api/indexes' );
+            my $res = $cb->($req);
+
+            #dump $res;
+            ok( my $json = decode_json( $res->content ),
+                "decode content as JSON" );
+
+            #dump $json;
+
+            is( $json->{total}, 1, "1 index" );
+            is( $json->{results}->[0]->{config}->{FuzzyIndexingMode},
+                'Stemming_en1', 'stemming config preserved' );
         }
     );
 

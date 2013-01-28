@@ -4,10 +4,6 @@ use warnings;
 use Carp;
 use Plack::Builder;
 use Data::Dump qw( dump );
-use Plack::Util::Accessor qw(
-    debug
-    base_uri
-);
 use JSON;
 use Dezi::Admin::API::Indexes;
 
