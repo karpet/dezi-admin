@@ -81,8 +81,8 @@ sub default_page {
   <script type="text/javascript" charset="utf-8" src="$extjs_uri/examples/grouptabs/all-classes.js"></script>
   
   <!-- dezi server js/css -->
-  <link rel="stylesheet" type="text/css" href="static/css/dezi-admin.css" />
-  <script type="text/javascript" charset="utf-8" src="static/js/dezi-admin.js"></script>
+  <link rel="stylesheet" type="text/css" href="$base_uri/admin/static/css/dezi-admin.css" />
+  <script type="text/javascript" charset="utf-8" src="$base_uri/admin/static/js/dezi-admin.js"></script>
 
  </head>
  <body id="ui"></body><!-- rendered via js -->
