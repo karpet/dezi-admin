@@ -104,8 +104,14 @@ sub call {
     my $resp = $req->new_response;
 
     if ( $req->method eq 'GET' ) {
-        my $body = $self->default_page;
-        $resp->body($body);
+        if ( $req->path ne '/' ) {
+            $resp->status(404);
+            $resp->body('No such resource');
+        }
+        else {
+            my $body = $self->default_page;
+            $resp->body($body);
+        }
     }
     else {
         $resp->status(405);
