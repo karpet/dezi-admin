@@ -1,6 +1,7 @@
 use Dezi::Stats;
 
-my $dbfile = '/tmp/dezi.db';
+my $dbfile   = $ENV{HOME} . '/projects/search_bench/stats.db';
+my $invindex = $ENV{HOME} . '/projects/search_bench/dezi.index';
 
 my $stats = Dezi::Stats->new(
     type     => 'DBI',
@@ -16,9 +17,10 @@ if ( !$r ) {
     die "init sqlite db $dbfile failed: " . $dbh->errstr;
 }
 
-{   admin        => { extjs_uri => '//localhost/~karpet/ext-4.1.1a', },
-    stats_logger => $stats,
-    admin_class  => 'Dezi::Admin',
-    debug        => 1,
+{   admin         => { extjs_uri => '//localhost/~karpet/ext-4.1.1a', },
+    stats_logger  => $stats,
+    admin_class   => 'Dezi::Admin',
+    debug         => 1,
+    engine_config => { index     => [$invindex], },
 }
 
