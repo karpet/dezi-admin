@@ -84,16 +84,6 @@ sub app {
 
     return builder {
 
-        #enable "SimpleLogger",
-        #    level => $admin_config->debug ? "debug" : "warn";
-
-        #enable_if { $_[0]->{REMOTE_ADDR} eq '127.0.0.1' }
-        #"Plack::Middleware::ReverseProxy";
-
-        #enable "Auth::Basic",
-        #    authenticator => $admin_config->authenticator,
-        #    realm         => $admin_config->auth_realm;
-
         # index meta
         mount '/indexes' => builder {
             enable 'REST',
@@ -110,6 +100,7 @@ sub app {
             mount '/stats' => builder {
                 enable 'REST', %$stats_app;
             };
+
         }
 
         # About page

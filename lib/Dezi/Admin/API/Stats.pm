@@ -81,7 +81,7 @@ sub get_stat {
 
     # TODO
 
-    return {};
+    return Dezi::Admin::API::Response->new();
 }
 
 #######################################################
