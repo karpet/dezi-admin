@@ -69,6 +69,7 @@ sub default_page {
   <script type="text/javascript">
       ExtJS_URL             = '$extjs_uri';
       DEZI_ADMIN_BASE_URL   = '$base_uri/admin';
+      DEZI_ABOUT = {};
   </script>
   
   <!-- ext base js/css -->
@@ -77,8 +78,17 @@ sub default_page {
   <link rel="stylesheet" type="text/css" href="$extjs_uri/examples/portal/portal.css" />
   <link rel="stylesheet" type="text/css" href="$extjs_uri/examples/ux/css/GroupTabPanel.css" />
     
-  <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all-debug.js"></script>
+  <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all.js"></script>
   <script type="text/javascript" charset="utf-8" src="$extjs_uri/examples/grouptabs/all-classes.js"></script>
+
+  <script type="text/javascript">
+      Ext.Ajax.request({
+          url: '$base_uri/',
+          success: function(resp,opts) {
+              DEZI_ABOUT = Ext.decode(resp.responseText);
+          }
+      });
+  </script>
   
   <!-- dezi server js/css -->
   <link rel="stylesheet" type="text/css" href="$base_uri/admin/static/css/dezi-admin.css" />
