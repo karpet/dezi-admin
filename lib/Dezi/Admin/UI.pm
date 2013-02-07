@@ -80,6 +80,8 @@ sub default_page {
     
   <script type="text/javascript" charset="utf-8" src="$extjs_uri/ext-all.js"></script>
   <script type="text/javascript" charset="utf-8" src="$extjs_uri/examples/grouptabs/all-classes.js"></script>
+  <script type="text/javascript" charset="utf-8" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
+
 
   <script type="text/javascript">
       Ext.Ajax.request({
