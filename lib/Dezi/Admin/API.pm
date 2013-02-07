@@ -68,17 +68,10 @@ sub app {
         require Dezi::Admin::API::Stats;
         my $conn = $stats_logger->conn;
         my $tbl  = $stats_logger->table_name;
-        $stats_app = {
-            get => Dezi::Admin::API::Stats::GET->new(
-                conn       => $conn,
-                table_name => $tbl,
-                )->to_app(),
-            list => Dezi::Admin::API::Stats::LIST->new(
-                conn       => $conn,
-                table_name => $tbl,
-                )->to_app(),
-            pass_through => 0,
-        };
+        $stats_app = Dezi::Admin::API::Stats->new(
+            conn       => $conn,
+            table_name => $tbl,
+        )->to_app();
         push @models, 'stats';
     }
 
@@ -97,9 +90,7 @@ sub app {
         # Dezi::Stats
         if ($stats_app) {
 
-            mount '/stats' => builder {
-                enable 'REST', %$stats_app;
-            };
+            mount '/stats' => $stats_app;
 
         }
 

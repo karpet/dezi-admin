@@ -84,41 +84,71 @@ sub get_stat {
     return Dezi::Admin::API::Response->new();
 }
 
-#######################################################
-## internal packages for Plack::Middleware::REST
-##
+sub get_terms {
+    my ( $self, $req ) = @_;
 
-package    # noindex
-    Dezi::Admin::API::Stats::GET;
+    my $list  = [];
+    my $total = 0;
+    my %sql
+        = Dezi::Admin::Utils::params_to_sql( $req, $self->table_name, ['q'] );
 
-use base qw( Dezi::Admin::API::Stats );
+    #dump \%sql;
 
-sub call {
-    my ( $self, $env ) = @_;
-    my $req  = Plack::Request->new($env);
-    my $stat = $self->get_stat($req);
-    my $resp = $req->new_response;
-    $resp->status(200) unless $resp->status;
-    $resp->content_type(Dezi::Admin::Utils::json_mime_type)
-        unless $resp->content_type;
-    $resp->body($stat);
-    return $resp->finalize;
+    $self->conn->run(
+        sub {
+            my $dbh = $_;
+            my $sth = $dbh->prepare( $sql{sql} );
+            $sql{args} ? $sth->execute( @{ $sql{args} } ) : $sth->execute();
+            while ( my $row = $sth->fetchrow_hashref ) {
+                push @$list, $row;
+            }
+            $sth = $dbh->prepare( $sql{count} );
+            $sql{args} ? $sth->execute( @{ $sql{args} } ) : $sth->execute();
+            $total = $sth->fetch->[0];
+        }
+    );
+
+    my $resp = Dezi::Admin::API::Response->new(
+        total   => $total,
+        results => $list,
+
+    );
+    $resp->metaData->{fields}   = [@FIELDS];
+    $resp->metaData->{sortInfo} = {
+        direction => $sql{direction},
+        field     => $sql{sort},
+    };
+    $resp->metaData->{limit} = $sql{limit};
+    $resp->metaData->{start} = $sql{offset};
+
+    return $resp;
+
 }
 
-package    # noindex
-    Dezi::Admin::API::Stats::LIST;
-
-use base qw( Dezi::Admin::API::Stats );
+my %dispatch = (
+    '/'      => 'get_list',
+    '/terms' => 'get_terms',
+);
 
 sub call {
     my ( $self, $env ) = @_;
-    my $req        = Plack::Request->new($env);
-    my $stats_list = $self->get_list($req);
-    my $resp       = $req->new_response;
+    my $req    = Plack::Request->new($env);
+    my $resp   = $req->new_response;
+    my $path   = $req->path;
+    my $method = $dispatch{$path} || undef;
+    if ( !$method ) {
+        $resp->status(404);
+        $resp->body( encode_json( { msg => 'Resource not found' } ) );
+    }
+    else {
+        my $api_resp = $self->$method($req);
+        $resp->body($api_resp);
+    }
+
     $resp->status(200) unless $resp->status;
     $resp->content_type(Dezi::Admin::Utils::json_mime_type)
         unless $resp->content_type;
-    $resp->body($stats_list);
+
     return $resp->finalize;
 }
 
@@ -149,6 +179,14 @@ one or more statistics matching GET params.
 
 Returns L<Dezi::Admin::API::Response> object for a single statistic.
 
+=head2 get_terms
+
+Returns L<Dezi::Admin::API::Response> object representing
+the top I<N> search terms.
+
+=head2 call( I<env> )
+
+Required method that dispatches request.
 
 =head1 AUTHOR
 
