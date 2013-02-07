@@ -19,6 +19,7 @@ MANIFEST
 META.yml
 README
 t/00-load.t
+t/001-admin.t
 t/example-config.pl
 t/pod-coverage.t
 t/pod.t
