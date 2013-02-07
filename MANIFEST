@@ -19,7 +19,6 @@ MANIFEST
 META.yml
 README
 t/00-load.t
-t/boilerplate.t
 t/example-config.pl
 t/pod-coverage.t
 t/pod.t

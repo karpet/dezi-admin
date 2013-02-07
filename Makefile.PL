@@ -13,6 +13,7 @@ requires 'Dezi'                             => 0.002007;
 requires 'Plack'                            => 0;
 requires 'Plack::Middleware::ReverseProxy'  => 0;
 requires 'Plack::Middleware::Auth::Basic'   => 0;
+requires 'Plack::Middleware::REST'          => 0;
 
 perl_version '5.8.9';
 license 'http://dev.perl.org/licenses/';
