@@ -8,6 +8,7 @@ use Plack::Util::Accessor qw(
     debug
     conn
     table_name
+    searcher
 );
 use JSON;
 use Plack::Middleware::REST::Util;
@@ -87,12 +88,14 @@ sub get_stat {
 sub get_terms {
     my ( $self, $req ) = @_;
 
-    my $list  = [];
+    my %all_terms;
     my $total = 0;
     my %sql
         = Dezi::Admin::Utils::params_to_sql( $req, $self->table_name, ['q'] );
 
     #dump \%sql;
+
+    my $query_parser = $self->searcher->engine->searcher->qp;
 
     $self->conn->run(
         sub {
@@ -100,23 +103,42 @@ sub get_terms {
             my $sth = $dbh->prepare( $sql{sql} );
             $sql{args} ? $sth->execute( @{ $sql{args} } ) : $sth->execute();
             while ( my $row = $sth->fetchrow_hashref ) {
-                push @$list, $row;
+                my $q = $row->{q} or next;
+                my $query;
+                eval { $query = $query_parser->parse($q); };
+                if ( !$@ and $query ) {
+
+                    $query->walk(
+                        sub {
+                            my ($clause) = @_;
+                            $all_terms{ $clause->value }++;
+                        }
+                    );
+
+                }
             }
-            $sth = $dbh->prepare( $sql{count} );
-            $sql{args} ? $sth->execute( @{ $sql{args} } ) : $sth->execute();
-            $total = $sth->fetch->[0];
         }
     );
+
+    my $list = [];
+    for my $term (
+        sort { $all_terms{$b} <=> $all_terms{$a} }
+        keys %all_terms
+        )
+    {
+        push @$list, { term => $term, count => $all_terms{$term} };
+    }
+    $total = scalar @$list;
 
     my $resp = Dezi::Admin::API::Response->new(
         total   => $total,
         results => $list,
 
     );
-    $resp->metaData->{fields}   = [@FIELDS];
+    $resp->metaData->{fields}   = [qw( term count )];
     $resp->metaData->{sortInfo} = {
-        direction => $sql{direction},
-        field     => $sql{sort},
+        direction => 'DESC',
+        field     => 'count',
     };
     $resp->metaData->{limit} = $sql{limit};
     $resp->metaData->{start} = $sql{offset};

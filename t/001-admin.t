@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Test::More tests => 32;
+use Test::More tests => 35;
 use Plack::Test;
 use File::Temp 'tempfile';
 use Plack::Request;
@@ -15,13 +15,13 @@ SKIP: {
     eval "use Dezi::Stats::DBI";
     if ($@) {
         diag "install Dezi::Stats::DBI to test Dezi::Admin";
-        skip "Dezi::Stats::DBI not installed", 32;
+        skip "Dezi::Stats::DBI not installed", 35;
     }
 
     eval "use DBD::SQLite";
     if ($@) {
         diag "install DBD::SQLite to test Dezi::Admin";
-        skip "DBD::SQLite not installed", 32;
+        skip "DBD::SQLite not installed", 35;
     }
 
     my ( undef, $dbfile ) = tempfile();
@@ -224,6 +224,26 @@ SKIP: {
             ok( my $json = decode_json( $res->content ),
                 "decode content as JSON" );
             is( $json->{total}, 4, "4 stats" );
+        }
+    );
+
+    test_psgi(
+        app    => $app,
+        client => sub {
+            my $cb  = shift;
+            my $req = HTTP::Request->new(
+                GET => 'http://localhost/admin/api/stats/terms' );
+            my $res = $cb->($req);
+
+            #dump $res;
+            ok( my $json = decode_json( $res->content ),
+                "decode content as JSON" );
+            is( $json->{total}, 1, "1 stats/terms" );
+            is_deeply(
+                $json->{results}->[0],
+                { count => 2, term => 'test' },
+                "got term result"
+            );
         }
     );
 

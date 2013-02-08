@@ -68,9 +68,11 @@ sub app {
         require Dezi::Admin::API::Stats;
         my $conn = $stats_logger->conn;
         my $tbl  = $stats_logger->table_name;
+
         $stats_app = Dezi::Admin::API::Stats->new(
             conn       => $conn,
             table_name => $tbl,
+            searcher   => $searcher,
         )->to_app();
         push @models, 'stats';
     }
