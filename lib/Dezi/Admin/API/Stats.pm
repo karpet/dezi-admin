@@ -103,8 +103,8 @@ sub get_terms {
 
     my %all_terms;
     my $total = 0;
-    my %sql
-        = Dezi::Admin::Utils::params_to_sql( $req, $self->table_name, ['q'] );
+    my %sql   = Dezi::Admin::Utils::params_to_sql( $req, $self->table_name,
+        [ 'q', 'tstamp', ] );
 
     #dump \%sql;
 
@@ -128,7 +128,13 @@ sub get_terms {
                                 $clause->value->walk($code);
                             }
                             else {
-                                $all_terms{ $clause->value }++;
+                                $all_terms{ $clause->value }->{count}++;
+                                $all_terms{ $clause->value }->{recent}
+                                    ||= $row->{tstamp};
+                                $all_terms{ $clause->value }->{recent}
+                                    = $row->{tstamp}
+                                    if $row->{tstamp}
+                                    > $all_terms{ $clause->value }->{recent};
                             }
                         }
                     );
@@ -140,11 +146,16 @@ sub get_terms {
 
     my $list = [];
     for my $term (
-        sort { $all_terms{$b} <=> $all_terms{$a} }
+        sort { $all_terms{$b}->{count} <=> $all_terms{$a}->{count} }
         keys %all_terms
         )
     {
-        push @$list, { term => $term, count => $all_terms{$term} };
+        push @$list,
+            {
+            term   => $term,
+            count  => $all_terms{$term}->{count},
+            recent => $all_terms{$term}->{recent},
+            };
     }
     $total = scalar @$list;
 
@@ -153,7 +164,14 @@ sub get_terms {
         results => $list,
 
     );
-    $resp->metaData->{fields}   = [qw( term count )];
+    $resp->metaData->{fields} = [
+        { name => 'term',  type => 'string', },
+        { name => 'count', type => 'int', },
+        {   name       => 'recent',
+            type       => 'date',
+            dateFormat => 'timestamp',
+        },
+    ];
     $resp->metaData->{sortInfo} = {
         direction => 'DESC',
         field     => 'count',
