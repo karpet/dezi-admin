@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Test::More tests => 35;
+use Test::More tests => 36;
 use Plack::Test;
 use File::Temp 'tempfile';
 use Plack::Request;
@@ -15,13 +15,13 @@ SKIP: {
     eval "use Dezi::Stats::DBI";
     if ($@) {
         diag "install Dezi::Stats::DBI to test Dezi::Admin";
-        skip "Dezi::Stats::DBI not installed", 35;
+        skip "Dezi::Stats::DBI not installed", 36;
     }
 
     eval "use DBD::SQLite";
     if ($@) {
         diag "install DBD::SQLite to test Dezi::Admin";
-        skip "DBD::SQLite not installed", 35;
+        skip "DBD::SQLite not installed", 36;
     }
 
     my ( undef, $dbfile ) = tempfile();
@@ -238,12 +238,9 @@ SKIP: {
             #dump $res;
             ok( my $json = decode_json( $res->content ),
                 "decode content as JSON" );
-            is( $json->{total}, 1, "1 stats/terms" );
-            is_deeply(
-                $json->{results}->[0],
-                { count => 2, term => 'test' },
-                "got term result"
-            );
+            is( $json->{total},                 1,      "1 stats/terms" );
+            is( $json->{results}->[0]->{count}, 2,      "got count result" );
+            is( $json->{results}->[0]->{term},  'test', "got term result" );
         }
     );
 
