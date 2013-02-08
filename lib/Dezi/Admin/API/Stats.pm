@@ -110,8 +110,13 @@ sub get_terms {
 
                     $query->walk(
                         sub {
-                            my ($clause) = @_;
-                            $all_terms{ $clause->value }++;
+                            my ( $clause, $dialect, $code, $prefix ) = @_;
+                            if ( $clause->is_tree ) {
+                                $clause->value->walk($code);
+                            }
+                            else {
+                                $all_terms{ $clause->value }++;
+                            }
                         }
                     );
 
@@ -160,7 +165,14 @@ sub call {
     my $method = $dispatch{$path} || undef;
     if ( !$method ) {
         $resp->status(404);
-        $resp->body( encode_json( { msg => 'Resource not found' } ) );
+        $resp->body(
+            encode_json(
+                {   code    => 404,
+                    success => 0,
+                    error   => 'Resource not found',
+                }
+            )
+        );
     }
     else {
         my $api_resp = $self->$method($req);
