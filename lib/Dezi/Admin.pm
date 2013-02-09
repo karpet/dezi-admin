@@ -14,6 +14,23 @@ Dezi::Admin - Dezi server administration UI
 
 =head1 SYNOPSIS
 
+ my $app = Dezi::Server->app(
+     {   
+         search_path   => 's',
+         index_path    => 'i',
+         engine_config => {
+             indexer_config => {
+                 config => { 'FuzzyIndexingMode' => 'Stemming_en1', },
+             },
+         },
+         admin_class  => 'Dezi::Admin',
+         stats_logger => $stats,
+     }
+ );
+
+ # or from the command line
+
+ % dezi --admin-class=Dezi::Admin
 
 =head1 DESCRIPTION
 
@@ -22,9 +39,11 @@ web interface to a Dezi server.
 
 =head1 METHODS
 
-=head2 app()
+=head2 app(I<args>)
 
 Returns a Plack-ready application via Plack::Builder.
+
+I<args> are passed directly to L<Dez::Admin::Config>.
 
 =cut
 

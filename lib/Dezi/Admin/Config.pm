@@ -22,7 +22,24 @@ Dezi::Admin::Config - Dezi administration UI configuration
 
 =head1 SYNOPSIS
 
+ use Dezi::Admin::Config;
+
+ my $dac = Dezi::Admin::Config->new(
+     user_config => {
+         username => 'myuser',
+         password => 'secret',
+         auth_realm => 'the dezi admin area',
+         extjs_url  => '//uri.for/extjs/4.1.x',
+         debug      => 1,
+     },
+     searcher => $dezi_server,
+     base_uri => 'http://yourserver/dezi',
+ );
+
 =head1 DESCRIPTION
+
+Dezi::Admin::Config is used internally by Dezi::Admin to instantiate
+the various components (UI, API, etc) that make up the application.
 
 =head1 METHODS
 
