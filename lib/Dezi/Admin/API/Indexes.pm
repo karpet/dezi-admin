@@ -13,7 +13,7 @@ use Plack::Middleware::REST::Util;
 use Dezi::Admin::Utils;
 use Dezi::Admin::API::Response;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 our @FIELDS = ( 'path', 'config', );
 

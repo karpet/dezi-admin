@@ -3,3 +3,6 @@ Revision history for Dezi-Admin
 0.001   08 Feb 2013 
     * First version, released on an unsuspecting world.
 
+0.002   13 Feb 2013
+    * fix bug with missing 'path' field in API::Stats
+
