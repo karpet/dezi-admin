@@ -6,3 +6,5 @@ Revision history for Dezi-Admin
 0.002   13 Feb 2013
     * fix bug with missing 'path' field in API::Stats
 
+0.003   16 Feb 2013
+    * add missing dependencies to Makefile.PL

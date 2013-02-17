@@ -7,7 +7,7 @@ use Data::Dump qw( dump );
 use JSON;
 use Dezi::Admin::API::Indexes;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 =head1 NAME
 

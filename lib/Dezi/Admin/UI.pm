@@ -11,7 +11,7 @@ use Plack::Util::Accessor qw(
     extjs_uri
 );
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 =head1 NAME
 
