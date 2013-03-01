@@ -12,9 +12,9 @@ use Carp;
 
 SKIP: {
 
-    eval "use Dezi::Stats::DBI";
+    eval "use Dezi::Stats::DBI 0.001005";
     if ($@) {
-        diag "install Dezi::Stats::DBI to test Dezi::Admin";
+        diag "install Dezi::Stats::DBI >= 0.001005 to test Dezi::Admin";
         skip "Dezi::Stats::DBI not installed", 36;
     }
 

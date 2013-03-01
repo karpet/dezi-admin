@@ -8,3 +8,6 @@ Revision history for Dezi-Admin
 
 0.003   16 Feb 2013
     * add missing dependencies to Makefile.PL
+
+0.004   28 Feb 2013
+    * require Dezi::Stats::DBI >= 0.001005 for tests, otherwise skip
