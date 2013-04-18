@@ -43,7 +43,7 @@ web interface to a Dezi server.
 
 Returns a Plack-ready application via Plack::Builder.
 
-I<args> are passed directly to L<Dez::Admin::Config>.
+I<args> are passed directly to L<Dezi::Admin::Config> new().
 
 =cut
 
