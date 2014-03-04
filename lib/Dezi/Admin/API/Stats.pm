@@ -208,7 +208,7 @@ sub call {
     }
     else {
         my $api_resp = $self->$method($req);
-        $resp->body($api_resp);
+        $resp->body("$api_resp");
     }
 
     $resp->status(200) unless $resp->status;

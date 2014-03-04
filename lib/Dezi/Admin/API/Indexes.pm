@@ -97,7 +97,7 @@ sub call {
     $resp->status(200) unless $resp->status;
     $resp->content_type(Dezi::Admin::Utils::json_mime_type)
         unless $resp->content_type;
-    $resp->body($list);
+    $resp->body("$list");
     return $resp->finalize;
 }
 
