@@ -129,13 +129,17 @@ sub get_terms {
                                 $clause->value->walk($code);
                             }
                             else {
-                                $all_terms{ $clause->value }->{count}++;
-                                $all_terms{ $clause->value }->{recent}
+                                my $value
+                                    = ref( $clause->value )
+                                    ? sprintf( '(%s..%s)',
+                                    @{ $clause->value } )
+                                    : $clause->value;
+                                $all_terms{$value}->{count}++;
+                                $all_terms{$value}->{recent}
                                     ||= $row->{tstamp};
-                                $all_terms{ $clause->value }->{recent}
-                                    = $row->{tstamp}
+                                $all_terms{$value}->{recent} = $row->{tstamp}
                                     if $row->{tstamp}
-                                    > $all_terms{ $clause->value }->{recent};
+                                    > $all_terms{$value}->{recent};
                             }
                         }
                     );
