@@ -15,7 +15,7 @@ use Plack::Middleware::REST::Util;
 use Dezi::Admin::Utils;
 use Dezi::Admin::API::Response;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 our @FIELDS = (
     {   name => 'id',

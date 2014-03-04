@@ -14,7 +14,7 @@ use Plack::Util::Accessor qw(
     api_server
 );
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 =head1 NAME
 

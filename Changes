@@ -1,5 +1,9 @@
 Revision history for Dezi-Admin
 
+0.005 04 March 2014
+ - force Response to stringify when handing to body() so that
+   Deflater middleware doesn't choke on an object.
+
 0.004 28 Feb 2013
  - require Dezi::Stats::DBI >= 0.001005 for tests, otherwise skip
 
