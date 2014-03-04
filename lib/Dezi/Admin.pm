@@ -6,7 +6,7 @@ use Plack::Builder;
 use Plack::App::File;
 use Dezi::Admin::Config;
 
-our $VERSION = '0.005';
+our $VERSION = '0.005_01';
 
 =head1 NAME
 
