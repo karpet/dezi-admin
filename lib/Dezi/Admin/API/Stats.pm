@@ -16,7 +16,7 @@ use Dezi::Admin::Utils;
 use Dezi::Admin::API::Response;
 use Try::Tiny;
 
-our $VERSION = '0.005_01';
+our $VERSION = '0.006';
 
 our @FIELDS = (
     {   name => 'id',

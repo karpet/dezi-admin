@@ -264,4 +264,8 @@ SKIP: {
         }
     );
 
+    # clean up
+    unless ( $ENV{DEZI_DEBUG} ) {
+        system("rm -rf dezi.index");
+    }
 }

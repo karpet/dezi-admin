@@ -7,7 +7,7 @@ use JSON;
 use Sort::SQL;
 use Search::QueryParser::SQL;
 
-our $VERSION = '0.005_01';
+our $VERSION = '0.006';
 
 sub json_mime_type {'application/json'}
 
