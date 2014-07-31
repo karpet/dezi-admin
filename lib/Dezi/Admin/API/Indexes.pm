@@ -32,7 +32,7 @@ sub get_list {
     for my $idx ( @{ $self->engine->searcher->invindex } ) {
         my $res = {
             path   => "$idx",
-            config => $idx->meta->data,
+            config => $idx->get_header->data,
         };
         push @$list, $res;
     }
